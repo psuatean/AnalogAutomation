@@ -1,0 +1,24 @@
+{
+    "Nimble": [
+        {
+        "amp_type": "Differential Output",
+            "comment1": "Only 2 options available: 'Single Ended' or 'Differential Output'!!!",
+        "URL": "https://beta-tools.analog.com/noise/#session=2zcPU892r0eYthh0GoDOyg&step=AVwXayO4ToGoKOh0re8AbQ",
+            "comment2": "URL should always be from a Single Ended Amp",
+        "gain": "1",
+        "common_mode_out": "0",
+        "device": "ADA4254",
+        "downloads_path": "C:\\Users\\MMot\\Downloads\\",
+            "_comment3": "Chrome downloads the files on user's downloads folder. The script will move the files from here to a more convenient path",
+        "project_location": "C:\\AnalogAutomation\\InAmpNoise",
+            "_comment4": "Project location should be a path were we want to store the results after running the scripts",
+        "x_axis_min": "0.1",
+        "x_axis_max": "100000",
+        "y_axis_min": "0.01",
+        "y_axis_max": "10000",
+            "_comment5": "X and Y axis are used to set the min and max for the chart. They're also used for scoring",
+        "x_axis_title": "Frequency (Hz)",
+        "y_axis_title": "Noise Spectral Density (V/sqrtHz)"
+        }
+    ]
+    }
