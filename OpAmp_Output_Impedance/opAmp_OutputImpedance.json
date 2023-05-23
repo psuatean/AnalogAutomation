@@ -1,0 +1,25 @@
+{
+    "Variables": [
+        {
+        "URL": "https://beta-tools.analog.com/noise/#session=XsYRaptpDk_S0lEvt4TqiA&step=-PY3SpBkTrqHq2MUT36Xbg",
+            "comment3": "URL should be from Design without load",
+        "device": "AD8552",
+        "gain": "10",
+        "R2": "2k",
+        "C2VALUE": "0",
+        "downloads_path": "C:\\Users\\MMot\\Downloads\\",
+            "_comment3": "Chrome downloads the files on user's downloads folder. The script will move the files from here to a more convenient path",
+        "project_location": "C:\\AnalogAutomation\\OpAmp_Output_Impedance",
+            "_comment4": "Project location should be a path were we want to store the results after running the scripts",
+        "x_axis_min": "1e2",
+        "x_axis_max": "1e7",
+        "y_axis_min": "0.01",
+        "y_axis_max": "1e3",
+            "_comment5": "X and Y axis are used to set the min and max for the chart. They're also used for scoring",
+        "x_axis_title": "Frequency (Hz)",
+        "y_axis_title": "Output Impedance (Ohm)",
+        "transform_LTSpice_to_dB": "No",
+            "_comment6": "choose 'Yes' to apply formula to LTSpice data"
+        }
+    ]
+    }
