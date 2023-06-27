@@ -227,16 +227,45 @@ class diffAMP(unittest.TestCase):
             
             # Getting the Datasheet data to Result File
             #source_workbook = (project_path + '\\' + device + '_WithScores.xlsx')
-            my_functions.copy_columns_between_excels(
-                source_workbook, results_file,
-                'Datasheet', 1, 2,
-                result_sheet, 7, 8)
-            
-            # # Copy result sheet to result file
             # my_functions.copy_columns_between_excels(
-            #     excel_path, results_file,
-            #     result_sheet, result_sheet)
-        
+            #     source_workbook, results_file,
+            #     'Datasheet', 1, 2,
+            #     result_sheet, 7, 8)
+            
+            # my_functions.copy_datasheet_columns(
+            #     source_workbook, results_file, result_sheet, 
+            #     (result_sheet + ' freq'), (result_sheet + ' mag'))  
+
+            source_workbook = openpyxl.load_workbook(source_workbook)
+            source_sheet = source_workbook['Datasheet']
+            
+            # Find the column indices based on header names
+            header_row = source_sheet[1]
+            column1_index = None
+            column2_index = None
+            for cell in header_row:
+                if cell.value == (result_sheet + ' freq'):
+                    column1_index = cell.column
+                elif cell.value == (result_sheet + ' mag'):
+                    column2_index = cell.column
+            
+            if column1_index is None or column2_index is None:
+                raise ValueError("Header not found in the Datasheet workbook.")
+            
+            # Load the target workbook
+            target_workbook = openpyxl.load_workbook(results_file)
+            target_sheet = target_workbook[result_sheet]  # Replace 'Sheet1' with the actual target sheet name
+            
+            # Copy the column values from source to target
+            for row in source_sheet.iter_rows(min_row=2, values_only=True):
+                column1_value = row[column1_index - 1]
+                column2_value = row[column2_index - 1]
+                
+                target_sheet.cell(row=target_sheet.max_row + 1, column=7, value=column1_value)
+                target_sheet.cell(row=target_sheet.max_row, column=8, value=column2_value)    
+            # Save the target workbook
+            target_workbook.save(results_file)       
+
 
         #Creating Scatter graph    
             workbook_path = (project_path + '\\' + device + '\\' + 'Amplifier - Transfer Function.xlsx')
