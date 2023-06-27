@@ -1,0 +1,13 @@
+{
+    "Nimble": 
+    [
+        {
+        "URL": "https://beta-tools.analog.com/noise/#session=Xz-QIG-8eEOQOFRSFBfQ9w&step=B4KQ-POFS2SOyv6oWW3GiA",
+        "device": "ADA4940-1",
+        "downloads_path": "C:\\Users\\MMot\\Downloads",
+            "_comment1": "Chrome downloads the files on user's downloads folder. The script uses this path to move the files in a more convenient path",
+        "project_location": "C:\\AnalogAutomation\\NoiseToolQA\\Diff Amps\\diffAmp_TransferFunction",
+            "_comment2": "Project location should be a path were we want to store the results after running the scrips"    
+        }
+    ]
+}
