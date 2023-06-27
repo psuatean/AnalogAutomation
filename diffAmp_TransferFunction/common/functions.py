@@ -103,35 +103,4 @@ class functions():
         # # Call the function with appropriate arguments
         # copy_ranges_within_excel(workbook_path, 'Datasheet', gain_sheet_score, 5, 6, 3, 4, offset_source_sheet=1, offset_target_sheet=2)
 
-    def copy_datasheet_columns(self, source_file, target_file, result_file_name, column1_header, column2_header):
-    # Load the source workbook
-        source_workbook = openpyxl.load_workbook(source_file)
-        source_sheet = source_workbook['Datasheet']
-        
-        # Find the column indices based on header names
-        header_row = source_sheet[1]
-        column1_index = None
-        column2_index = None
-        for cell in header_row:
-            if cell.value == column1_header:
-                column1_index = cell.column
-            elif cell.value == column2_header:
-                column2_index = cell.column
-        
-        if column1_index is None or column2_index is None:
-            raise ValueError("Header not found in the source workbook.")
-        
-        # Load the target workbook
-        target_workbook = openpyxl.load_workbook(target_file)
-        target_sheet = target_workbook[result_file_name]  # Replace 'Sheet1' with the actual target sheet name
-        
-        # Copy the column values from source to target
-        for row in source_sheet.iter_rows(min_row=2, values_only=True):
-            column1_value = row[column1_index - 1]
-            column2_value = row[column2_index - 1]
-            
-            target_sheet.cell(row=target_sheet.max_row + 1, column=7, value=column1_value)
-            target_sheet.cell(row=target_sheet.max_row, column=8, value=column2_value)    
-        # Save the target workbook
-        target_workbook.save(target_file)
     

@@ -223,49 +223,32 @@ class diffAMP(unittest.TestCase):
             my_functions.copy_columns_between_excels(
                 ltspice_output_path, results_file,
                 'Sheet1', 1, 2,
-                result_sheet, 4, 5)  
+                result_sheet, 3, 4)  
             
-            # Getting the Datasheet data to Result File
-            #source_workbook = (project_path + '\\' + device + '_WithScores.xlsx')
-            # my_functions.copy_columns_between_excels(
-            #     source_workbook, results_file,
-            #     'Datasheet', 1, 2,
-            #     result_sheet, 7, 8)
-            
-            # my_functions.copy_datasheet_columns(
-            #     source_workbook, results_file, result_sheet, 
-            #     (result_sheet + ' freq'), (result_sheet + ' mag'))  
-
-            source_workbook = openpyxl.load_workbook(source_workbook)
-            source_sheet = source_workbook['Datasheet']
-            
-            # Find the column indices based on header names
-            header_row = source_sheet[1]
-            column1_index = None
-            column2_index = None
-            for cell in header_row:
-                if cell.value == (result_sheet + ' freq'):
-                    column1_index = cell.column
-                elif cell.value == (result_sheet + ' mag'):
-                    column2_index = cell.column
-            
-            if column1_index is None or column2_index is None:
-                raise ValueError("Header not found in the Datasheet workbook.")
-            
-            # Load the target workbook
-            target_workbook = openpyxl.load_workbook(results_file)
-            target_sheet = target_workbook[result_sheet]  # Replace 'Sheet1' with the actual target sheet name
-            
-            # Copy the column values from source to target
-            for row in source_sheet.iter_rows(min_row=2, values_only=True):
-                column1_value = row[column1_index - 1]
-                column2_value = row[column2_index - 1]
-                
-                target_sheet.cell(row=target_sheet.max_row + 1, column=7, value=column1_value)
-                target_sheet.cell(row=target_sheet.max_row, column=8, value=column2_value)    
-            # Save the target workbook
-            target_workbook.save(results_file)       
-
+            # Getting the Datasheet data to Result File                   
+            wb1 = openpyxl.load_workbook(source_workbook)
+            ws1 = wb1['Datasheet']
+            wb2 = openpyxl.load_workbook(results_file)
+            ws2 = wb2[result_sheet]
+            # Copy the specified columns from sheet_1 to sheet_2
+            ws2.cell(row=3, column=5).value = None
+            ws2.cell(row=3, column=6).value = None
+            column1_1 = 1
+            column2_1 = 2
+            for row in range(1, ws1.max_row + 1):
+                if row != 2:
+                    ws2.cell(row=row, column=5).value = ws1.cell(row=row, column=column1_1).value
+                    ws2.cell(row=row, column=6).value = ws1.cell(row=row, column=column2_1).value
+            #Shift rows up
+            for row in range(3, ws2.max_row + 1):
+                ws2.cell(row=row-1, column=5).value = ws2.cell(row=row, column=5).value
+                ws2.cell(row=row-1, column=6).value = ws2.cell(row=row, column=6).value
+            # Clear values in the last row
+            ws2.cell(row=ws2.max_row, column=5).value = None
+            ws2.cell(row=ws2.max_row, column=6).value = None
+            column1_1 += 2
+            column2_1 += 2
+            wb2.save(results_file)
 
         #Creating Scatter graph    
             workbook_path = (project_path + '\\' + device + '\\' + 'Amplifier - Transfer Function.xlsx')
@@ -306,10 +289,10 @@ class diffAMP(unittest.TestCase):
             chart.x_axis.tickLblPos = "low"
             chart.x_axis.tickLblSkip = 3
 
-            chart.x_axis.scaling.min = paths['x_axis_min']
-            chart.y_axis.scaling.min = paths['y_axis_min']
-            chart.x_axis.scaling.max = paths['x_axis_max']
-            chart.y_axis.scaling.max = paths['y_axis_max']
+            chart.x_axis.scaling.min = self.testData['x_axis_min']
+            chart.y_axis.scaling.min = self.testData['y_axis_min']
+            chart.x_axis.scaling.max = self.testData['x_axis_max']
+            chart.y_axis.scaling.max = self.testData['y_axis_max']
             chart.x_axis.tickLblPos = "low"
 
             chart.title = None
@@ -342,11 +325,11 @@ class diffAMP(unittest.TestCase):
 
             # Info for score table
             sheet['A2'] = 'Magnitude range'
-            sheet['A3'] = float(paths['y_axis_min'])
-            sheet['A4'] = float(paths['y_axis_max'])
+            sheet['A3'] = float(self.testData['y_axis_min'])
+            sheet['A4'] = float(self.testData['y_axis_max'])
             sheet['B2'] = 'Frequency range'
-            sheet['B3'] = float(paths['x_axis_min'])
-            sheet['B4'] = float(paths['x_axis_max'])
+            sheet['B3'] = float(self.testData['x_axis_min'])
+            sheet['B4'] = float(self.testData['x_axis_max'])
             sheet['C2'] = 'Datasheet freq'
             sheet['D2'] = 'Datasheet mag'
             # Nimble Score table
