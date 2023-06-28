@@ -42,6 +42,16 @@ class diffAMP(unittest.TestCase):
         self.driver = webdriver.Chrome(options=options) 
         with open(r'diffAmp_TransferFunction\DiffAmp_TransferFunction.json') as d:
             self.testData = json.load(d)['Nimble'][0]
+
+        driver = self.driver
+        driver.maximize_window()
+        driver.get(self.testData['URL'])
+        # cookies accept
+        WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.CSS_SELECTOR, "#noise-spinner")))
+        WebDriverWait(driver, 10).until(EC.invisibility_of_element((By.CSS_SELECTOR, "#noise-spinner")))
+        WebDriverWait(driver, 5).until(EC.presence_of_element_located((
+            By.CSS_SELECTOR, "body.ember-application:nth-child(2) div.consent-dialog:nth-child(1) div.modal.fade.in.show "
+                            "div.modal-dialog div.modal-content div.modal-body div.short-description > a.btn.btn-success:nth-child(2)"))).click()
         
     def test_export(self):
         my_functions = functions() 
@@ -61,7 +71,7 @@ class diffAMP(unittest.TestCase):
         
             driver = self.driver
             driver.maximize_window()
-            driver.get(self.testData['URL'])
+            # driver.get(self.testData['URL'])
 
             print ("+++++++++++++++++++++++++++++++++++++++++++++++++++++++++")
             print ("       DiffAmp_TransferFunction script is running        ")
@@ -83,12 +93,12 @@ class diffAMP(unittest.TestCase):
             # new_rc1value = my_functions.text_to_num(paths['rc1_value'])
             new_r3value = my_functions.text_to_num(R3) 
               
-            # cookies accept
-            WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.CSS_SELECTOR, "#noise-spinner")))
-            WebDriverWait(driver, 10).until(EC.invisibility_of_element((By.CSS_SELECTOR, "#noise-spinner")))
-            WebDriverWait(driver, 5).until(EC.presence_of_element_located((
-                By.CSS_SELECTOR, "body.ember-application:nth-child(2) div.consent-dialog:nth-child(1) div.modal.fade.in.show "
-                                "div.modal-dialog div.modal-content div.modal-body div.short-description > a.btn.btn-success:nth-child(2)"))).click()
+            # # cookies accept
+            # WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.CSS_SELECTOR, "#noise-spinner")))
+            # WebDriverWait(driver, 10).until(EC.invisibility_of_element((By.CSS_SELECTOR, "#noise-spinner")))
+            # WebDriverWait(driver, 5).until(EC.presence_of_element_located((
+            #     By.CSS_SELECTOR, "body.ember-application:nth-child(2) div.consent-dialog:nth-child(1) div.modal.fade.in.show "
+            #                     "div.modal-dialog div.modal-content div.modal-body div.short-description > a.btn.btn-success:nth-child(2)"))).click()
             
             # amplifier settings
             WebDriverWait(driver, 10).until(EC.presence_of_element_located((
@@ -250,215 +260,223 @@ class diffAMP(unittest.TestCase):
             column2_1 += 2
             wb2.save(results_file)
 
-        #Creating Scatter graph    
-            workbook_path = (project_path + '\\' + device + '\\' + 'Amplifier - Transfer Function.xlsx')
-            workbook = load_workbook(workbook_path)
-            sheet = workbook['G'+gain]
-            link = driver.current_url
-            sheet['J1'] = link
-
-            sheet.cell(row=1, column=1).value = "Nimble-Freq."
-            sheet.cell(row=1, column=2).value = "Nimble-Mag."
-            sheet.cell(row=1, column=4).value = "LTSpice-Freq."
-            sheet.cell(row=1, column=5).value = "LTSspice-Mag."
-            sheet.cell(row=1, column=7).value = "Datasheet-Freq."
-            sheet.cell(row=1, column=8).value = "Datasheet-Mag."
-
-            for i in range(1,21):
-                sheet.cell(row=1, column=i).font = openpyxl.styles.Font(bold=True)
-
-            x_nimble = Reference(sheet, min_col=2, min_row=2, max_row=1010)
-            y_nimble = Reference(sheet, min_col=1, min_row=2, max_row=1010)
-            x_ltspice = Reference(sheet, min_col=5, min_row=2, max_row=1010)
-            y_ltspice = Reference(sheet, min_col=4, min_row=2, max_row=1010)
-            x_datasheet = Reference(sheet, min_col=8, min_row=2, max_row=1010)
-            y_datasheet = Reference(sheet, min_col=7, min_row=2, max_row=1010)
-
-            series_nimble = Series(x_nimble, y_nimble, title_from_data=False, title="Nimble")
-            series_ltspice = Series(x_ltspice, y_ltspice, title_from_data=False, title="LTspice")
-            series_datasheet = Series(x_datasheet, y_datasheet, title_from_data=False, title="Datasheet")
-            
-            # Chart type
-            chart = ScatterChart()
-            chart.series.append(series_nimble)
-            chart.series.append(series_ltspice)
-            chart.series.append(series_datasheet)
-
-            chart.x_axis.scaling.logBase = 10
-            chart.y_axis.number_format = '0.00E+00'
-            chart.x_axis.tickLblPos = "low"
-            chart.x_axis.tickLblSkip = 3
-
-            chart.x_axis.scaling.min = self.testData['x_axis_min']
-            chart.y_axis.scaling.min = self.testData['y_axis_min']
-            chart.x_axis.scaling.max = self.testData['x_axis_max']
-            chart.y_axis.scaling.max = self.testData['y_axis_max']
-            chart.x_axis.tickLblPos = "low"
-
-            chart.title = None
-            chart.x_axis.title = 'Frequency (Hz)'
-            chart.y_axis.title = 'Magnitude (dB)'
-            chart.legend.position = 'r'
-
-            sheet.add_chart(chart, 'J2')
-            workbook.save(workbook_path)
-            
-            print ("+++++++++++++++++++++++++++++++++++++++++++++++++++++++++")
-            print ("            Scatter Plot chart was created!              ")
-            print ("+++++++++++++++++++++++++++++++++++++++++++++++++++++++++")
-            
-        # Create and Customize Scoring sheet
-            workbook.create_sheet('G' + gain + ' Score')
-            score_sheet = ('G' + gain + ' Score')
-            sheet = workbook[score_sheet]
-
-            # Creating Header
-            cell_ranges = ['A1:D1', 'E1:L1', 'M1:T1']
-            texts = ['Info for score', 'Nimble score', 'LTspice score']
-
-            for cell_range, text in zip(cell_ranges, texts):
-                sheet.merge_cells(cell_range)
-                cell = sheet[cell_range.split(':')[0]]
-                cell.value = text
-                cell.font = Font(bold=True)
-                cell.alignment = Alignment(horizontal='center')
-
-            # Info for score table
-            sheet['A2'] = 'Magnitude range'
-            sheet['A3'] = float(self.testData['y_axis_min'])
-            sheet['A4'] = float(self.testData['y_axis_max'])
-            sheet['B2'] = 'Frequency range'
-            sheet['B3'] = float(self.testData['x_axis_min'])
-            sheet['B4'] = float(self.testData['x_axis_max'])
-            sheet['C2'] = 'Datasheet freq'
-            sheet['D2'] = 'Datasheet mag'
-            # Nimble Score table
-            sheet['E2'] = 'Closest match without going over index'
-            sheet['F2'] = 'Below freq'
-            sheet['G2'] = 'Above freq'
-            sheet['H2'] = 'Below mag'
-            sheet['I2'] = 'Above mag'
-            sheet['J2'] = 'Linear interpolation'
-            sheet['K2'] = 'Error (dB)'
-            sheet['L2'] = 'Score'
-            # LTspice Score table
-            sheet['M2'] = 'Closest match without going over index'
-            sheet['N2'] = 'Below freq'
-            sheet['O2'] = 'Above freq'
-            sheet['P2'] = 'Below mag'
-            sheet['Q2'] = 'Above mag'
-            sheet['R2'] = 'Linear interpolation'
-            sheet['S2'] = 'Error (dB)'
-            sheet['T2'] = 'Score'
-            sheet['L2'].font = Font(bold=True)
-            sheet['T2'].font = Font(bold=True)
-
-            #Wrap cells and set width
-            for col in range(1, 22):
-                cell = sheet.cell(row=2, column=col)
-                cell.alignment = Alignment(wrap_text=True)
-                sheet.column_dimensions[get_column_letter(col)].width = 12
-            
-            workbook.save(workbook_path)
-            
-        #Transfering Datasheet from G2 to G2 Score
-            def copy_ranges_within_excel(workbook_path, source_sheet, source_range1, source_range2, target_sheet, target_range1, target_range2):
-                wb = openpyxl.load_workbook(workbook_path)
-                ws_source = wb[source_sheet]
-                ws_target = wb[target_sheet]
-                for (source_range, target_range) in zip([source_range1, source_range2], [target_range1, target_range2]):
-                    for row in ws_source[source_range]:
-                        for cell in row:
-                            target_cell = ws_target.cell(row=cell.row + 1, column=cell.column - 4)
-                            target_cell.value = cell.value
-                wb.save(workbook_path)
-
-            sheet_Gx = 'G'+gain
-            sheet_Gx_Score = 'G' + gain + ' Score'
-            copy_ranges_within_excel(workbook_path, sheet_Gx, 'G2:G56', 'H2:H56', sheet_Gx_Score, 'C3:C57', 'D3:D57')
-
-        #This fuction applies the formulas to create the score for Nimble and LTspice
-            def apply_formulas(workbook, sheet1_name, sheet2_name):
-                wb = openpyxl.load_workbook(workbook)
-
-                sheet1 = wb[sheet1_name]
-                sheet2 = wb[sheet2_name]
-
-                # Iterate through cells E3:E56 and F3:F56 in sheet1 and apply the formulas
-                for row in range(3, 57):
-                    cell_e = sheet1.cell(row=row, column=5)  # Column 5 corresponds to 'E' =MATCH(C3,'G2'!$A$2:$A$432,1)
-                    cell_e.value = f'=MATCH(C{row}, {sheet2_name}!$A$2:$A$432, 1)'
-                    cell_f = sheet1.cell(row=row, column=6)  # Column 6 corresponds to 'F' =INDEX('G2'!$A$2:$A$432,'G2 Score'!E3)
-                    cell_f.value = f'=INDEX({sheet2_name}!$A$2:$A$432, E{row})'             
-                    cell_g = sheet1.cell(row=row, column=7)  # Column 7 corresponds to 'G' =INDEX('G2'!$A$2:$A$432,'G2 Score'!E3+1)
-                    cell_g.value = f'=INDEX({sheet2_name}!$A$2:$A$432, E{row}+1)'              
-                    cell_h = sheet1.cell(row=row, column=8)  # Column 8 corresponds to 'H' =INDEX('G2'!$B$2:$B$432,'G2 Score'!E3)
-                    cell_h.value = f'=INDEX({sheet2_name}!$B$2:$B$432, E{row})'               
-                    cell_i = sheet1.cell(row=row, column=9)  # Column 9 corresponds to 'I' =INDEX('G2'!$B$2:$B$432,'G2 Score'!E3+1)
-                    cell_i.value = f'=INDEX({sheet2_name}!$B$2:$B$432, E{row}+1)'               
-                    cell_j = sheet1.cell(row=row, column=10)  # Column 10 corresponds to 'J' =SLOPE(H3:I3,F3:G3)*(C3-F3)+H3
-                    cell_j.value = f'=SLOPE(H{row}:I{row}, F{row}:G{row})*(C{row}-F{row})+H{row}'             
-                    cell_k = sheet1.cell(row=row, column=11)  # Column 11 corresponds to 'K' =ABS(J3-D3)
-                    cell_k.value = f'=ABS(J{row}-D{row})'
-                    
-                cell_l3 = sheet1.cell(row=3, column=12)  # Column 12 corresponds to 'L' =AVERAGE(K3:K46)
-                cell_l3.value = '=AVERAGE(K3:K52)'
-                cell_l3.font = Font(bold=True)
-                
-                # Formulas for LTSpice scoring
-                for row in range(3, 57):
-                    cell_m = sheet1.cell(row=row, column=13)  # Column 5 corresponds to 'M' =MATCH(C3,'G2'!$A$2:$A$432,1)
-                    cell_m.value = f'=MATCH(C{row}, {sheet2_name}!$D$2:$D$1002, 1)'
-                    cell_n = sheet1.cell(row=row, column=14)  # Column 6 corresponds to 'N' =INDEX('G2'!$A$2:$A$432,'G2 Score'!E3)
-                    cell_n.value = f'=INDEX({sheet2_name}!$D$2:$D$1002, M{row})'
-                    cell_o = sheet1.cell(row=row, column=15)  # Column 7 corresponds to 'O' =INDEX('G2'!$A$2:$A$432,'G2 Score'!E3+1)
-                    cell_o.value = f'=INDEX({sheet2_name}!$D$2:$D$1002, M{row}+1)'
-                    cell_p = sheet1.cell(row=row, column=16)  # Column 8 corresponds to 'P' =INDEX('G2'!$B$2:$B$432,'G2 Score'!E3)
-                    cell_p.value = f'=INDEX({sheet2_name}!$E$2:$E$1002, M{row})'
-                    cell_q = sheet1.cell(row=row, column=17)  # Column 9 corresponds to 'Q' =INDEX('G2'!$B$2:$B$432,'G2 Score'!E3+1)
-                    cell_q.value = f'=INDEX({sheet2_name}!$E$2:$E$1002, M{row}+1)'
-                    cell_r = sheet1.cell(row=row, column=18)  # Column 10 corresponds to 'R' =SLOPE(H3:I3,F3:G3)*(C3-F3)+H3
-                    cell_r.value = f'=SLOPE(P{row}:Q{row}, N{row}:O{row})*(C{row}-N{row})+P{row}'
-                    cell_s = sheet1.cell(row=row, column=19)  # Column 11 corresponds to 'S' =ABS(J3-D3)
-                    cell_s.value = f'=ABS(R{row}-D{row})'
-                    
-                cell_t3 = sheet1.cell(row=3, column=20)  # Column 12 corresponds to 'T' =AVERAGE(K3:K46)
-                cell_t3.value = '=AVERAGE(S3:S52)'
-                cell_t3.font = Font(bold=True)
-                    
-                wb.save(workbook)
-
-            apply_formulas(workbook_path, sheet_Gx_Score, sheet_Gx)     
-                
-            print ("+++++++++++++++++++++++++++++++++++++++++++++++++++++++++")
-            print ("               Scoring sheet was created!                ")
-            print ("+++++++++++++++++++++++++++++++++++++++++++++++++++++++++")
-
-            rename_noise_excel = project_path + '\\' + device + '\\' + 'Amplifier - Transfer Function.xlsx'
-            new_noise_excel = project_path + '\\' + device + '.xlsx'
-            os.rename(rename_noise_excel, new_noise_excel)
-
-            #function that deletes unwated files
-            def delete_extra_files(folder: str, goodfile: str, goodfile2: str) -> None:
-                for entry in os.listdir(folder):
-                    entry_path = os.path.join(folder, entry)
-                    if os.path.isfile(entry_path):
-                        if entry != goodfile and entry != goodfile2:
-                            os.remove(entry_path)
-                        else:
-                            continue
-                    elif os.path.isdir(entry_path):
-                        shutil.rmtree(entry_path)
-
-            folder_path = project_path + '\\' + device
-            goodfile1 = f"{device}.xlsx"
-            goodfile2 = f"{device}_WithScores.xlsx"
-            print(goodfile1, goodfile2)
-            delete_extra_files(folder_path, goodfile1, goodfile2)
-
     def tearDown(self):
-        #self.driver.quit()
+    #self.driver.quit()
         pass        
 
 if __name__ == '__main__':
     unittest.main()
+
+
+#         #Creating Scatter graph    
+#             workbook_path = (project_path + '\\' + device + '\\' + 'Amplifier - Transfer Function.xlsx')
+#             workbook = load_workbook(workbook_path)
+#             sheet = workbook['G'+gain]
+#             link = driver.current_url
+#             sheet['J1'] = link
+
+#             sheet.cell(row=1, column=1).value = "Nimble-Freq."
+#             sheet.cell(row=1, column=2).value = "Nimble-Mag."
+#             sheet.cell(row=1, column=4).value = "LTSpice-Freq."
+#             sheet.cell(row=1, column=5).value = "LTSspice-Mag."
+#             sheet.cell(row=1, column=7).value = "Datasheet-Freq."
+#             sheet.cell(row=1, column=8).value = "Datasheet-Mag."
+
+#             for i in range(1,21):
+#                 sheet.cell(row=1, column=i).font = openpyxl.styles.Font(bold=True)
+
+#             x_nimble = Reference(sheet, min_col=2, min_row=2, max_row=1010)
+#             y_nimble = Reference(sheet, min_col=1, min_row=2, max_row=1010)
+#             x_ltspice = Reference(sheet, min_col=5, min_row=2, max_row=1010)
+#             y_ltspice = Reference(sheet, min_col=4, min_row=2, max_row=1010)
+#             x_datasheet = Reference(sheet, min_col=8, min_row=2, max_row=1010)
+#             y_datasheet = Reference(sheet, min_col=7, min_row=2, max_row=1010)
+
+#             series_nimble = Series(x_nimble, y_nimble, title_from_data=False, title="Nimble")
+#             series_ltspice = Series(x_ltspice, y_ltspice, title_from_data=False, title="LTspice")
+#             series_datasheet = Series(x_datasheet, y_datasheet, title_from_data=False, title="Datasheet")
+            
+#             # Chart type
+#             chart = ScatterChart()
+#             chart.series.append(series_nimble)
+#             chart.series.append(series_ltspice)
+#             chart.series.append(series_datasheet)
+
+#             chart.x_axis.scaling.logBase = 10
+#             chart.y_axis.number_format = '0.00E+00'
+#             chart.x_axis.tickLblPos = "low"
+#             chart.x_axis.tickLblSkip = 3
+
+#             chart.x_axis.scaling.min = self.testData['x_axis_min']
+#             chart.y_axis.scaling.min = self.testData['y_axis_min']
+#             chart.x_axis.scaling.max = self.testData['x_axis_max']
+#             chart.y_axis.scaling.max = self.testData['y_axis_max']
+#             chart.x_axis.tickLblPos = "low"
+
+#             chart.title = None
+#             chart.x_axis.title = 'Frequency (Hz)'
+#             chart.y_axis.title = 'Magnitude (dB)'
+#             chart.legend.position = 'r'
+
+#             sheet.add_chart(chart, 'J2')
+#             workbook.save(workbook_path)
+            
+#             print ("+++++++++++++++++++++++++++++++++++++++++++++++++++++++++")
+#             print ("            Scatter Plot chart was created!              ")
+#             print ("+++++++++++++++++++++++++++++++++++++++++++++++++++++++++")
+            
+#         # Create and Customize Scoring sheet
+#             workbook.create_sheet('G' + gain + ' Score')
+#             score_sheet = ('G' + gain + ' Score')
+#             sheet = workbook[score_sheet]
+
+#             # Creating Header
+#             cell_ranges = ['A1:D1', 'E1:L1', 'M1:T1']
+#             texts = ['Info for score', 'Nimble score', 'LTspice score']
+
+#             for cell_range, text in zip(cell_ranges, texts):
+#                 sheet.merge_cells(cell_range)
+#                 cell = sheet[cell_range.split(':')[0]]
+#                 cell.value = text
+#                 cell.font = Font(bold=True)
+#                 cell.alignment = Alignment(horizontal='center')
+
+#             # Info for score table
+#             sheet['A2'] = 'Magnitude range'
+#             sheet['A3'] = float(self.testData['y_axis_min'])
+#             sheet['A4'] = float(self.testData['y_axis_max'])
+#             sheet['B2'] = 'Frequency range'
+#             sheet['B3'] = float(self.testData['x_axis_min'])
+#             sheet['B4'] = float(self.testData['x_axis_max'])
+#             sheet['C2'] = 'Datasheet freq'
+#             sheet['D2'] = 'Datasheet mag'
+#             # Nimble Score table
+#             sheet['E2'] = 'Closest match without going over index'
+#             sheet['F2'] = 'Below freq'
+#             sheet['G2'] = 'Above freq'
+#             sheet['H2'] = 'Below mag'
+#             sheet['I2'] = 'Above mag'
+#             sheet['J2'] = 'Linear interpolation'
+#             sheet['K2'] = 'Error (dB)'
+#             sheet['L2'] = 'Score'
+#             # LTspice Score table
+#             sheet['M2'] = 'Closest match without going over index'
+#             sheet['N2'] = 'Below freq'
+#             sheet['O2'] = 'Above freq'
+#             sheet['P2'] = 'Below mag'
+#             sheet['Q2'] = 'Above mag'
+#             sheet['R2'] = 'Linear interpolation'
+#             sheet['S2'] = 'Error (dB)'
+#             sheet['T2'] = 'Score'
+#             sheet['L2'].font = Font(bold=True)
+#             sheet['T2'].font = Font(bold=True)
+
+#             #Wrap cells and set width
+#             for col in range(1, 22):
+#                 cell = sheet.cell(row=2, column=col)
+#                 cell.alignment = Alignment(wrap_text=True)
+#                 sheet.column_dimensions[get_column_letter(col)].width = 12
+            
+#             workbook.save(workbook_path)
+            
+#         #Transfering Datasheet from G2 to G2 Score
+#             def copy_ranges_within_excel(workbook_path, source_sheet, source_range1, source_range2, target_sheet, target_range1, target_range2):
+#                 wb = openpyxl.load_workbook(workbook_path)
+#                 ws_source = wb[source_sheet]
+#                 ws_target = wb[target_sheet]
+#                 for (source_range, target_range) in zip([source_range1, source_range2], [target_range1, target_range2]):
+#                     for row in ws_source[source_range]:
+#                         for cell in row:
+#                             target_cell = ws_target.cell(row=cell.row + 1, column=cell.column - 4)
+#                             target_cell.value = cell.value
+#                 wb.save(workbook_path)
+
+#             sheet_Gx = 'G'+gain
+#             sheet_Gx_Score = 'G' + gain + ' Score'
+#             copy_ranges_within_excel(workbook_path, sheet_Gx, 'G2:G56', 'H2:H56', sheet_Gx_Score, 'C3:C57', 'D3:D57')
+
+#         #This fuction applies the formulas to create the score for Nimble and LTspice
+#             def apply_formulas(workbook, sheet1_name, sheet2_name):
+#                 wb = openpyxl.load_workbook(workbook)
+
+#                 sheet1 = wb[sheet1_name]
+#                 sheet2 = wb[sheet2_name]
+
+#                 # Iterate through cells E3:E56 and F3:F56 in sheet1 and apply the formulas
+#                 for row in range(3, 57):
+#                     cell_e = sheet1.cell(row=row, column=5)  # Column 5 corresponds to 'E' =MATCH(C3,'G2'!$A$2:$A$432,1)
+#                     cell_e.value = f'=MATCH(C{row}, {sheet2_name}!$A$2:$A$432, 1)'
+#                     cell_f = sheet1.cell(row=row, column=6)  # Column 6 corresponds to 'F' =INDEX('G2'!$A$2:$A$432,'G2 Score'!E3)
+#                     cell_f.value = f'=INDEX({sheet2_name}!$A$2:$A$432, E{row})'             
+#                     cell_g = sheet1.cell(row=row, column=7)  # Column 7 corresponds to 'G' =INDEX('G2'!$A$2:$A$432,'G2 Score'!E3+1)
+#                     cell_g.value = f'=INDEX({sheet2_name}!$A$2:$A$432, E{row}+1)'              
+#                     cell_h = sheet1.cell(row=row, column=8)  # Column 8 corresponds to 'H' =INDEX('G2'!$B$2:$B$432,'G2 Score'!E3)
+#                     cell_h.value = f'=INDEX({sheet2_name}!$B$2:$B$432, E{row})'               
+#                     cell_i = sheet1.cell(row=row, column=9)  # Column 9 corresponds to 'I' =INDEX('G2'!$B$2:$B$432,'G2 Score'!E3+1)
+#                     cell_i.value = f'=INDEX({sheet2_name}!$B$2:$B$432, E{row}+1)'               
+#                     cell_j = sheet1.cell(row=row, column=10)  # Column 10 corresponds to 'J' =SLOPE(H3:I3,F3:G3)*(C3-F3)+H3
+#                     cell_j.value = f'=SLOPE(H{row}:I{row}, F{row}:G{row})*(C{row}-F{row})+H{row}'             
+#                     cell_k = sheet1.cell(row=row, column=11)  # Column 11 corresponds to 'K' =ABS(J3-D3)
+#                     cell_k.value = f'=ABS(J{row}-D{row})'
+                    
+#                 cell_l3 = sheet1.cell(row=3, column=12)  # Column 12 corresponds to 'L' =AVERAGE(K3:K46)
+#                 cell_l3.value = '=AVERAGE(K3:K52)'
+#                 cell_l3.font = Font(bold=True)
+                
+#                 # Formulas for LTSpice scoring
+#                 for row in range(3, 57):
+#                     cell_m = sheet1.cell(row=row, column=13)  # Column 5 corresponds to 'M' =MATCH(C3,'G2'!$A$2:$A$432,1)
+#                     cell_m.value = f'=MATCH(C{row}, {sheet2_name}!$D$2:$D$1002, 1)'
+#                     cell_n = sheet1.cell(row=row, column=14)  # Column 6 corresponds to 'N' =INDEX('G2'!$A$2:$A$432,'G2 Score'!E3)
+#                     cell_n.value = f'=INDEX({sheet2_name}!$D$2:$D$1002, M{row})'
+#                     cell_o = sheet1.cell(row=row, column=15)  # Column 7 corresponds to 'O' =INDEX('G2'!$A$2:$A$432,'G2 Score'!E3+1)
+#                     cell_o.value = f'=INDEX({sheet2_name}!$D$2:$D$1002, M{row}+1)'
+#                     cell_p = sheet1.cell(row=row, column=16)  # Column 8 corresponds to 'P' =INDEX('G2'!$B$2:$B$432,'G2 Score'!E3)
+#                     cell_p.value = f'=INDEX({sheet2_name}!$E$2:$E$1002, M{row})'
+#                     cell_q = sheet1.cell(row=row, column=17)  # Column 9 corresponds to 'Q' =INDEX('G2'!$B$2:$B$432,'G2 Score'!E3+1)
+#                     cell_q.value = f'=INDEX({sheet2_name}!$E$2:$E$1002, M{row}+1)'
+#                     cell_r = sheet1.cell(row=row, column=18)  # Column 10 corresponds to 'R' =SLOPE(H3:I3,F3:G3)*(C3-F3)+H3
+#                     cell_r.value = f'=SLOPE(P{row}:Q{row}, N{row}:O{row})*(C{row}-N{row})+P{row}'
+#                     cell_s = sheet1.cell(row=row, column=19)  # Column 11 corresponds to 'S' =ABS(J3-D3)
+#                     cell_s.value = f'=ABS(R{row}-D{row})'
+                    
+#                 cell_t3 = sheet1.cell(row=3, column=20)  # Column 12 corresponds to 'T' =AVERAGE(K3:K46)
+#                 cell_t3.value = '=AVERAGE(S3:S52)'
+#                 cell_t3.font = Font(bold=True)
+                    
+#                 wb.save(workbook)
+
+#             apply_formulas(workbook_path, sheet_Gx_Score, sheet_Gx)     
+                
+#             print ("+++++++++++++++++++++++++++++++++++++++++++++++++++++++++")
+#             print ("               Scoring sheet was created!                ")
+#             print ("+++++++++++++++++++++++++++++++++++++++++++++++++++++++++")
+
+#             rename_noise_excel = project_path + '\\' + device + '\\' + 'Amplifier - Transfer Function.xlsx'
+#             new_noise_excel = project_path + '\\' + device + '.xlsx'
+#             os.rename(rename_noise_excel, new_noise_excel)
+
+#             #function that deletes unwated files
+#             def delete_extra_files(folder: str, goodfile: str, goodfile2: str) -> None:
+#                 for entry in os.listdir(folder):
+#                     entry_path = os.path.join(folder, entry)
+#                     if os.path.isfile(entry_path):
+#                         if entry != goodfile and entry != goodfile2:
+#                             os.remove(entry_path)
+#                         else:
+#                             continue
+#                     elif os.path.isdir(entry_path):
+#                         shutil.rmtree(entry_path)
+
+#             folder_path = project_path + '\\' + device
+#             goodfile1 = f"{device}.xlsx"
+#             goodfile2 = f"{device}_WithScores.xlsx"
+#             print(goodfile1, goodfile2)
+#             delete_extra_files(folder_path, goodfile1, goodfile2)
+
+#     def tearDown(self):
+#         #self.driver.quit()
+#         pass        
+
+# if __name__ == '__main__':
+#     unittest.main()
